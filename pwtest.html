@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copyparty PW-Gen Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px;
+            background-color: #f4f4f9;
+        }
+        .container {
+            background: white;
+            padding: 20px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+            padding: 8px 15px;
+            margin: 5px 0;
+            background: #eee;
+            border-radius: 4px;
+            color: #d63384;
+            font-weight: bold;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Initial-Passwörter Test</h1>
+        <ul id="passwordList">
+            </ul>
+        <button onclick="renderPasswords()">Neue Liste generieren</button>
+    </div>
+
+    <script src="password.js"></script>
+
+    <script>
+        function renderPasswords() {
+            const listElement = document.getElementById('passwordList');
+            if (!listElement) return;
+
+            // Liste leeren
+            listElement.innerHTML = '';
+
+            // Prüfen ob PasswordGenerator geladen wurde
+            if (typeof PasswordGenerator !== 'undefined') {
+                // 12 Passwörter generieren
+                for (let i = 0; i < 12; i++) {
+                    const li = document.createElement('li');
+                    li.textContent = PasswordGenerator.generate();
+                    listElement.appendChild(li);
+                }
+            } else {
+                const li = document.createElement('li');
+                li.textContent = "Fehler: password.js nicht gefunden!";
+                li.style.color = "red";
+                listElement.appendChild(li);
+            }
+        }
+
+        // Beim ersten Laden direkt ausführen
+        document.addEventListener('DOMContentLoaded', renderPasswords);
+    </script>
+</body>
+</html>
