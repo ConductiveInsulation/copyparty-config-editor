@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copyparty Config Editor PRO</title>
+    <style>
+        :root {
+            --bg: #f1f5f9; --panel: #ffffff; --border: #cbd5e1; --text: #1e293b;
+            --accent: #2563eb; --inc: #16a34a; --exc: #dc2626; --muted: #64748b;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: var(--bg); color: var(--text); 
+            max-width: 880px; margin: 20px auto; padding-bottom: 220px;
+        }
+
+        /* Header */
+        .header-section { 
+            background: var(--panel); padding: 20px; border-radius: 8px; 
+            border: 1px solid var(--border); display: flex; 
+            justify-content: space-between; align-items: center; margin-bottom: 20px; 
+        }
+
+        /* Cards */
+        .block-container { display: flex; flex-direction: column; gap: 20px; }
+        .editor-card { 
+            background: var(--panel); padding: 20px; border-radius: 8px; 
+            border: 1px solid var(--border); border-top: 5px solid var(--accent); 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        /* Inputs & Labels */
+        input[type="text"], input[type="password"], input[type="number"], textarea { 
+            background: #fff; color: var(--text); border: 1px solid var(--border); 
+            padding: 8px; border-radius: 4px; font-family: inherit; font-size: 0.95rem;
+        }
+        
+        /* WICHTIG: Schrift normalisieren wie gewünscht */
+        .share-header input { font-weight: normal; font-family: monospace; }
+        
+        .field-label {
+            display: block; font-size: 0.75rem; text-transform: uppercase; 
+            color: var(--muted); margin-bottom: 4px; font-weight: bold; letter-spacing: 0.05em;
+        }
+
+        /* Buttons */
+        .btn { cursor: pointer; border: 1px solid var(--border); border-radius: 4px; padding: 6px 12px; background: #fff; }
+        .btn:hover { background: #f8fafc; }
+        .btn-add { background: var(--accent); color: white; border: none; }
+        .btn-del { background: var(--exc); color: white; border: none; }
+        .btn-big-add { 
+            width: 100%; padding: 15px; border: 2px dashed var(--border); 
+            background: transparent; color: var(--muted); font-weight: bold; 
+            cursor: pointer; border-radius: 8px; margin-top: 10px; 
+        }
+        .btn-big-add:hover { border-color: var(--accent); color: var(--accent); background: #fff; }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 8px; border-bottom: 2px solid var(--border); color: var(--muted); font-size: 0.85rem; }
+        td { padding: 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+
+        /* Matrix Styles */
+        .matrix-container { overflow-x: auto; }
+        .matrix-table th.rotate { height: 120px; white-space: nowrap; position: relative; vertical-align: bottom; }
+        .matrix-table th.rotate > div { transform: rotate(-90deg); width: 30px; }
+        .matrix-cell { 
+            text-align: center; cursor: pointer; font-weight: bold; user-select: none; 
+            border: 1px solid var(--border); width: 35px; height: 35px;
+        }
+        .matrix-cell:hover { background: #f1f5f9; }
+        .matrix-cell[data-state="+"] { background: #dcfce7; color: var(--inc); }
+        .matrix-cell[data-state="-"] { background: #fee2e2; color: var(--exc); }
+        .matrix-cell.locked { background: #eee; color: #ccc; cursor: default; }
+
+        /* Footer */
+        .footer-section { 
+            position: fixed; bottom: 0; left: 0; right: 0; 
+            background: #0f172a; color: #fff; padding: 15px; 
+            z-index: 1000; text-align: center; border-top: 1px solid #334155;
+        }
+        .bash-box { 
+            width: 100%; max-width: 880px; height: 70px; 
+            background: #020617; color: #4ade80; border: 1px solid #334155; 
+            padding: 10px; border-radius: 4px; resize: none; font-family: monospace;
+        }
+
+        .hidden { display: none !important; }
+        .advanced-area { margin-top: 40px; border-top: 2px dashed var(--border); padding-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="header-section">
+    <h2 style="margin:0">Copyparty Config Editor</h2>
+    <div style="display:flex; gap:15px; align-items:center;">
+        <button class="btn" onclick="document.getElementById('fileInput').click()">📂 Datei laden</button>
+        <input type="file" id="fileInput" style="display:none">
+        
+        <label style="display:flex; align-items:center; gap:5px; font-size:0.9rem; cursor:pointer;">
+            <input type="checkbox" id="toggleAdvanced" onchange="UI.toggleAdvanced()">
+            <span>Advanced Mode</span>
+        </label>
+    </div>
+</div>
+
+<div id="visual-container" class="block-container"></div>
+
+<button class="btn-big-add" onclick="Editors.addShareBlock()">+ Neues Share hinzufügen</button>
+
+<div id="advanced-container" class="block-container advanced-area hidden">
+    <h3 style="text-align:center; color:var(--muted);">Raw Config (Advanced)</h3>
+    <div id="raw-blocks"></div>
+</div>
+
+<div class="footer-section">
+    <div style="font-size:0.8rem; margin-bottom:5px; opacity:0.8;">Script zum Anwenden (Klicken zum Kopieren):</div>
+    <textarea id="bashOutput" class="bash-box" readonly onclick="UI.copyBash()"></textarea>
+</div>
+
+<datalist id="user-list"></datalist>
+<datalist id="params-list">
+    <option value="rw">Read-Write</option>
+    <option value="r">Read-Only</option>
+    <option value="A">Admin</option>
+</datalist>
+
+<script src="parameters.js"></script>
+<script src="password.js"></script>
+<script src="parser.js"></script>
+<script src="bash-gen.js"></script> <script src="editors.js"></script>
+
+<script>
+    const UI = {
+        blocks: [],
+        init() {
+            document.getElementById('fileInput').addEventListener('change', (e) => this.loadFile(e));
+        },
+        loadFile(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                this.blocks = ConfigParser.parse(ev.target.result);
+                this.renderAll();
+            };
+            reader.readAsText(file);
+        },
+        renderAll() {
+            const vis = document.getElementById('visual-container');
+            const adv = document.getElementById('raw-blocks');
+            vis.innerHTML = ''; 
+            adv.innerHTML = '';
+
+            // 1. Accounts (Visuell)
+            const acc = this.blocks.find(b => b.type === 'accounts');
+            if(acc) Editors.renderAccountEditor(acc, vis);
+
+            // User Liste für Datalists aktualisieren
+            this.updateUserList();
+
+            // 2. Groups (Visuell & Editierbar)
+            const grp = this.blocks.find(b => b.type === 'groups');
+            if(grp) Editors.renderGroupEditor(grp, vis);
+
+            // 3. Shares (Visuell)
+            this.blocks.filter(b => b.type === 'share').forEach(b => Editors.renderShareEditor(b, vis));
+
+            // 4. Advanced (Raw Views für alle)
+            this.blocks.forEach(b => {
+                const div = document.createElement('div');
+                div.className = 'editor-card';
+                div.style.borderLeft = "5px solid #64748b";
+                div.style.borderTop = "none";
+                div.innerHTML = `<h4>[${b.type}] ${b.title} (ID: ${b.order})</h4><textarea class="raw-config" style="width:100%; height:100px; font-family:monospace" data-order="${b.order}" oninput="UI.syncFromRaw(this)">${b.content}</textarea>`;
+                adv.appendChild(div);
+            });
+
+            this.updateBash();
+        },
+        syncFromRaw(ta) {
+            const order = parseInt(ta.dataset.order);
+            const block = this.blocks.find(b => b.order === order);
+            if(block) {
+                block.content = ta.value;
+                // Wenn Accounts/Gruppen bearbeitet werden, UI neu laden
+                if(block.type === 'accounts' || block.type === 'groups') {
+                    // Quick re-render visuals only is hard without full cycle
+                    // For now, simpler to just update bash. Ideally re-trigger renderAll safely.
+                }
+                this.updateBash();
+            }
+        },
+        syncBlock(order, newContent) {
+            const block = this.blocks.find(b => b.order === order);
+            if(block) {
+                block.content = newContent;
+                // Raw Textarea auch updaten
+                const rawTa = document.querySelector(`textarea[data-order="${order}"]`);
+                if(rawTa) rawTa.value = newContent;
+                this.updateBash();
+                if(block.type === 'accounts') this.updateUserList();
+            }
+        },
+        updateUserList() {
+            const dl = document.getElementById('user-list');
+            dl.innerHTML = '';
+            Editors.getCurrentUsers().forEach(u => {
+                const opt = document.createElement('option');
+                opt.value = u; dl.appendChild(opt);
+            });
+        },
+        updateBash() {
+            // HIER wird deine bash-gen.js Logik verwendet
+            const config = BashGenerator.generateConfig(); 
+            const script = BashGenerator.generateFullScript(config);
+            document.getElementById('bashOutput').value = script;
+        },
+        toggleAdvanced() {
+            const show = document.getElementById('toggleAdvanced').checked;
+            document.getElementById('advanced-container').classList.toggle('hidden', !show);
+        },
+        copyBash() {
+            const el = document.getElementById('bashOutput');
+            el.select(); document.execCommand('copy');
+            const old = el.style.backgroundColor;
+            el.style.backgroundColor = "#166534";
+            setTimeout(()=> el.style.backgroundColor = old, 300);
+        }
+    };
+    UI.init();
+</script>
+</body>
+</html>

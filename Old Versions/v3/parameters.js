@@ -1,7 +1,5 @@
 /**
-
- * COPYPARTY EDITOR PRO - parameters.js
- * Hinweis: Dieser Code wurde von Gemini (KI) generiert.
+ * parameters.js
  * Enthält die vollständige Definition aller Copyparty-Volume-Optionen.
  * Basierend auf copyparty v1.19.0
  */

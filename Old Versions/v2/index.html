@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copyparty Config Editor - Admin</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 20px; background-color: #f0f2f5; color: #333; padding-bottom: 180px; }
+        .header-section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        
+        .controls { margin: 15px 0; display: flex; align-items: center; gap: 10px; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #007bff; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .block-container { display: flex; flex-direction: column; gap: 15px; }
+        .config-block { background: #fff; padding: 15px; border-radius: 6px; border-left: 5px solid #ccc; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+        
+        .type-accounts { border-left-color: #28a745; }
+        .type-groups { border-left-color: #ffc107; }
+        .type-share { border-left-color: #17a2b8; }
+        
+        textarea.raw-config { width: 100%; min-height: 100px; font-family: 'Courier New', monospace; border: 1px solid #ddd; padding: 8px; box-sizing: border-box; }
+
+        .editor-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 5px solid #007bff; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; background: #f8f9fa; padding: 10px; border-bottom: 2px solid #dee2e6; }
+        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+        
+        .pw-container { display: flex; gap: 5px; }
+        input[type="text"], input[type="password"] { padding: 6px; border: 1px solid #ccc; border-radius: 3px; font-family: inherit; }
+        
+        .btn { cursor: pointer; border: none; border-radius: 3px; padding: 6px 12px; transition: 0.2s; font-size: 0.9rem; }
+        .btn-gen { background: #28a745; color: white; }
+        .btn-del { background: #dc3545; color: white; }
+        .btn-add { background: #007bff; color: white; margin-top: 10px; font-weight: bold; }
+
+        .footer-section { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; color: #fff; padding: 15px 25px; box-shadow: 0 -4px 15px rgba(0,0,0,0.4); z-index: 1000; }
+        .bash-box { width: 100%; height: 90px; background: #000; color: #33ff33; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; border: 1px solid #444; padding: 10px; margin-top: 8px; box-sizing: border-box; cursor: pointer; border-radius: 5px; resize: none; }
+        
+        .upload-area { border: 2px dashed #007bff; padding: 30px; text-align: center; cursor: pointer; background: #fff; transition: 0.2s; border-radius: 8px; }
+        .upload-area:hover { background: #f0f7ff; border-color: #0056b3; }
+        /* Matrix Styling */
+.matrix-table { border-collapse: collapse; margin-top: 20px; background: white; }
+.matrix-table th, .matrix-table td { border: 1px solid #ddd; padding: 0; text-align: center; min-width: 40px; }
+
+th.rotate { height: 140px; white-space: nowrap; position: relative; vertical-align: bottom; padding-bottom: 10px; }
+th.rotate > div { transform: translate(0px, 0px) rotate(-90deg); width: 30px; margin-left: auto; margin-right: auto; }
+th.rotate > div > span { border-bottom: 1px solid #ccc; padding: 5px 10px; }
+th.group-col { background-color: #fff9e6; }
+
+.matrix-cell { cursor: pointer; font-weight: bold; font-size: 1.2rem; height: 40px; transition: 0.1s; user-select: none; }
+.matrix-cell:hover { background-color: #f0f0f0; }
+.matrix-cell[data-state="+"] { color: #28a745; background-color: #e8f5e9; }
+.matrix-cell[data-state="-"] { color: #dc3545; background-color: #ffebee; }
+.matrix-cell.locked { background-color: #eee; color: #ccc; cursor: not-allowed; }
+
+.group-name-input { border: none; font-weight: bold; width: 150px; padding: 10px; }
+th.special-col { background-color: #e7f3ff; }
+.matrix-cell[data-name="@acct"] { border-right: 2px solid #ccc; }
+    </style>
+</head>
+<body>
+
+<div class="header-section">
+    <h1>Copyparty Config Editor</h1>
+    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <strong>copyparty.conf</strong> hier hochladen oder Datei hineinziehen
+    </div>
+    <input type="file" id="fileInput" style="display:none">
+    
+    <div class="controls">
+        <label class="switch">
+            <input type="checkbox" id="toggleAdvanced" onchange="UI.toggleAdvanced()">
+            <span class="slider"></span>
+        </label>
+        <span style="font-weight: bold; margin-left: 5px;">Advanced Settings (Roh-Konfiguration bearbeiten)</span>
+    </div>
+</div>
+
+<div id="custom-editors">
+    </div>
+
+<div id="editor-container" class="block-container hidden">
+    </div>
+
+<div class="footer-section">
+    <strong>Klick zum Kopieren (Backup -> mkdir -> Config -> Restart):</strong>
+    <textarea id="bashOutput" class="bash-box" readonly onclick="UI.copyBash()"></textarea>
+</div>
+
+<script src="password.js"></script>
+<script src="parser.js"></script>
+<script src="bash-gen.js"></script>
+<script src="editors.js"></script>
+
+<script>
+    const UI = {
+        blocks: [],
+
+        init() {
+            document.getElementById('fileInput').addEventListener('change', (e) => this.loadFile(e));
+        },
+
+        loadFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                this.blocks = ConfigParser.parse(event.target.result);
+                this.renderAll();
+            };
+            reader.readAsText(file);
+        },
+
+        renderAll() {
+            const container = document.getElementById('editor-container');
+            container.innerHTML = '';
+            
+            // Editoren vorbereiten
+            const accBlock = this.blocks.find(b => b.type === 'accounts');
+            if (accBlock) Editors.renderAccountEditor(accBlock.content);
+            
+            const allUsers = Editors.getCurrentUsers();
+
+            const grpBlock = this.blocks.find(b => b.type === 'groups');
+            if (grpBlock) Editors.renderGroupEditor(grpBlock.content, allUsers);
+
+            // Raw-Blöcke rendern
+            this.blocks.forEach(block => {
+                const div = document.createElement('div');
+                div.className = `config-block type-${block.type}`;
+                div.innerHTML = `
+                    <div style="font-size:0.8rem; margin-bottom:5px; color:#666;">
+                        <strong>[${block.title}]</strong> | Typ: ${block.type.toUpperCase()} | ID: ${block.order}
+                    </div>
+                    <textarea class="raw-config" data-order="${block.order}" oninput="UI.syncFromRaw(this)" spellcheck="false">${block.content}</textarea>
+                `;
+                container.appendChild(div);
+            });
+            this.updateBash();
+        },
+
+        syncFromRaw(textarea) {
+            const order = parseInt(textarea.getAttribute('data-order'));
+            const block = this.blocks.find(b => b.order === order);
+            if (block) {
+                block.content = textarea.value;
+                if (block.type === 'accounts') {
+                    Editors.renderAccountEditor(block.content);
+                    const allUsers = Editors.getCurrentUsers();
+                    const grp = this.blocks.find(b => b.type === 'groups');
+                    if (grp) Editors.renderGroupEditor(grp.content, allUsers);
+                }
+                if (block.type === 'groups') {
+                    const allUsers = Editors.getCurrentUsers();
+                    Editors.renderGroupEditor(block.content, allUsers);
+                }
+            }
+            this.updateBash();
+        },
+
+        syncFromEditor() {
+            // Sync Accounts
+            const accBlock = this.blocks.find(b => b.type === 'accounts');
+            if (accBlock) {
+                accBlock.content = Editors.getAccountContentFromTable();
+                const ta = document.querySelector(`textarea[data-order="${accBlock.order}"]`);
+                if (ta) ta.value = accBlock.content;
+            }
+
+            // Sync Gruppen
+            const grpBlock = this.blocks.find(b => b.type === 'groups');
+            if (grpBlock) {
+                grpBlock.content = Editors.getGroupContentFromTable();
+                const ta = document.querySelector(`textarea[data-order="${grpBlock.order}"]`);
+                if (ta) ta.value = grpBlock.content;
+            }
+            
+            // UI Update für Gruppen (falls Usernamen geändert wurden)
+            const allUsers = Editors.getCurrentUsers();
+            if (grpBlock) Editors.renderGroupEditor(grpBlock.content, allUsers);
+
+            this.updateBash();
+        },
+
+        updateBash() {
+            const configContent = BashGenerator.generateConfig();
+            const fullScript = BashGenerator.generateFullScript(configContent);
+    
+            // FIX: ID muss 'bashOutput' sein und für Textareas nutzt man .value
+            const outputElement = document.getElementById('bashOutput');
+            if (outputElement) {
+                outputElement.value = fullScript;
+            }
+        },
+
+        toggleAdvanced() {
+            const isChecked = document.getElementById('toggleAdvanced').checked;
+            document.getElementById('editor-container').classList.toggle('hidden', !isChecked);
+        },
+
+        copyBash() {
+            const out = document.getElementById('bashOutput');
+            out.select();
+            document.execCommand('copy');
+            // Visuelles Feedback
+            const originalColor = out.style.color;
+            out.style.color = "#ffffff";
+            setTimeout(() => { out.style.color = originalColor; }, 200);
+        }
+    };
+
+    UI.init();
+</script>
+</body>
+</html>
