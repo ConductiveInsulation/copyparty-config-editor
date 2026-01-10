@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Copyparty Config Editor - Phase 3 (Accounts)</title>
+    <title>Copyparty Config Editor - Admin</title>
     <style>
-        body { font-family: sans-serif; margin: 20px; background-color: #f0f2f5; color: #333; padding-bottom: 160px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 20px; background-color: #f0f2f5; color: #333; padding-bottom: 180px; }
         .header-section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
         
         .controls { margin: 15px 0; display: flex; align-items: center; gap: 10px; }
@@ -19,28 +19,49 @@
         .block-container { display: flex; flex-direction: column; gap: 15px; }
         .config-block { background: #fff; padding: 15px; border-radius: 6px; border-left: 5px solid #ccc; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .hidden { display: none; }
-
+        
         .type-accounts { border-left-color: #28a745; }
+        .type-groups { border-left-color: #ffc107; }
         .type-share { border-left-color: #17a2b8; }
         
-        textarea.raw-config { width: 100%; min-height: 100px; font-family: monospace; border: 1px solid #ddd; padding: 8px; box-sizing: border-box; }
+        textarea.raw-config { width: 100%; min-height: 100px; font-family: 'Courier New', monospace; border: 1px solid #ddd; padding: 8px; box-sizing: border-box; }
 
-        /* Account Editor Styling */
-        .editor-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 5px solid #28a745; }
+        .editor-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; border-top: 5px solid #007bff; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { text-align: left; background: #f8f9fa; padding: 10px; border-bottom: 2px solid #dee2e6; }
-        td { padding: 10px; border-bottom: 1px solid #eee; }
+        td { padding: 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+        
         .pw-container { display: flex; gap: 5px; }
-        input[type="text"], input[type="password"] { padding: 5px; border: 1px solid #ccc; border-radius: 3px; }
-        .btn { cursor: pointer; border: none; border-radius: 3px; padding: 5px 10px; transition: 0.2s; }
+        input[type="text"], input[type="password"] { padding: 6px; border: 1px solid #ccc; border-radius: 3px; font-family: inherit; }
+        
+        .btn { cursor: pointer; border: none; border-radius: 3px; padding: 6px 12px; transition: 0.2s; font-size: 0.9rem; }
         .btn-gen { background: #28a745; color: white; }
         .btn-del { background: #dc3545; color: white; }
-        .btn-add { background: #007bff; color: white; margin-top: 10px; }
+        .btn-add { background: #007bff; color: white; margin-top: 10px; font-weight: bold; }
 
-        .footer-section { position: fixed; bottom: 0; left: 0; right: 0; background: #222; color: #fff; padding: 15px 20px; box-shadow: 0 -2px 15px rgba(0,0,0,0.5); z-index: 100; }
-        .bash-box { width: 100%; height: 80px; background: #000; color: #00ff41; font-family: 'Courier New', monospace; font-size: 12px; border: 1px solid #444; padding: 8px; margin-top: 5px; box-sizing: border-box; cursor: pointer; border-radius: 4px; }
+        .footer-section { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; color: #fff; padding: 15px 25px; box-shadow: 0 -4px 15px rgba(0,0,0,0.4); z-index: 1000; }
+        .bash-box { width: 100%; height: 90px; background: #000; color: #33ff33; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; border: 1px solid #444; padding: 10px; margin-top: 8px; box-sizing: border-box; cursor: pointer; border-radius: 5px; resize: none; }
         
-        .upload-area { border: 2px dashed #007bff; padding: 20px; text-align: center; cursor: pointer; }
+        .upload-area { border: 2px dashed #007bff; padding: 30px; text-align: center; cursor: pointer; background: #fff; transition: 0.2s; border-radius: 8px; }
+        .upload-area:hover { background: #f0f7ff; border-color: #0056b3; }
+        /* Matrix Styling */
+.matrix-table { border-collapse: collapse; margin-top: 20px; background: white; }
+.matrix-table th, .matrix-table td { border: 1px solid #ddd; padding: 0; text-align: center; min-width: 40px; }
+
+th.rotate { height: 140px; white-space: nowrap; position: relative; vertical-align: bottom; padding-bottom: 10px; }
+th.rotate > div { transform: translate(0px, 0px) rotate(-90deg); width: 30px; margin-left: auto; margin-right: auto; }
+th.rotate > div > span { border-bottom: 1px solid #ccc; padding: 5px 10px; }
+th.group-col { background-color: #fff9e6; }
+
+.matrix-cell { cursor: pointer; font-weight: bold; font-size: 1.2rem; height: 40px; transition: 0.1s; user-select: none; }
+.matrix-cell:hover { background-color: #f0f0f0; }
+.matrix-cell[data-state="+"] { color: #28a745; background-color: #e8f5e9; }
+.matrix-cell[data-state="-"] { color: #dc3545; background-color: #ffebee; }
+.matrix-cell.locked { background-color: #eee; color: #ccc; cursor: not-allowed; }
+
+.group-name-input { border: none; font-weight: bold; width: 150px; padding: 10px; }
+th.special-col { background-color: #e7f3ff; }
+.matrix-cell[data-name="@acct"] { border-right: 2px solid #ccc; }
     </style>
 </head>
 <body>
@@ -48,223 +69,153 @@
 <div class="header-section">
     <h1>Copyparty Config Editor</h1>
     <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-        <strong>copyparty.conf</strong> hochladen
+        <strong>copyparty.conf</strong> hier hochladen oder Datei hineinziehen
     </div>
     <input type="file" id="fileInput" style="display:none">
     
     <div class="controls">
         <label class="switch">
-            <input type="checkbox" id="toggleAdvanced" onchange="toggleRawBlocks()">
+            <input type="checkbox" id="toggleAdvanced" onchange="UI.toggleAdvanced()">
             <span class="slider"></span>
         </label>
-        <span>Advanced Settings (Roh-Blöcke anzeigen)</span>
+        <span style="font-weight: bold; margin-left: 5px;">Advanced Settings (Roh-Konfiguration bearbeiten)</span>
     </div>
 </div>
 
 <div id="custom-editors">
     </div>
 
-<div id="editor" class="block-container hidden">
+<div id="editor-container" class="block-container hidden">
     </div>
 
 <div class="footer-section">
-    <strong>Bash One-Liner (Klick zum Kopieren):</strong>
-    <textarea id="bashOutput" class="bash-box" readonly onclick="copyBash()"></textarea>
+    <strong>Klick zum Kopieren (Backup -> mkdir -> Config -> Restart):</strong>
+    <textarea id="bashOutput" class="bash-box" readonly onclick="UI.copyBash()"></textarea>
 </div>
 
 <script src="password.js"></script>
-<script>
-    const fileInput = document.getElementById('fileInput');
-    const editorContainer = document.getElementById('editor');
-    const customEditors = document.getElementById('custom-editors');
-    const bashOutput = document.getElementById('bashOutput');
+<script src="parser.js"></script>
+<script src="bash-gen.js"></script>
+<script src="editors.js"></script>
 
-    fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
+<script>
+    const UI = {
+        blocks: [],
+
+        init() {
+            document.getElementById('fileInput').addEventListener('change', (e) => this.loadFile(e));
+        },
+
+        loadFile(e) {
+            const file = e.target.files[0];
+            if (!file) return;
             const reader = new FileReader();
-            reader.onload = (e) => {
-                parseConfig(e.target.result);
-                renderAccountEditor();
-                updateBashCommand();
+            reader.onload = (event) => {
+                this.blocks = ConfigParser.parse(event.target.result);
+                this.renderAll();
             };
             reader.readAsText(file);
-        }
-    });
+        },
 
-    function parseConfig(rawText) {
-        editorContainer.innerHTML = ''; 
-        const regex = /^\[/gm;
-        let match, indices = [];
-        while ((match = regex.exec(rawText)) !== null) indices.push(match.index);
+        renderAll() {
+            const container = document.getElementById('editor-container');
+            container.innerHTML = '';
+            
+            // Editoren vorbereiten
+            const accBlock = this.blocks.find(b => b.type === 'accounts');
+            if (accBlock) Editors.renderAccountEditor(accBlock.content);
+            
+            const allUsers = Editors.getCurrentUsers();
 
-        indices.forEach((start, i) => {
-            const end = (i + 1 < indices.length) ? indices[i + 1] : rawText.length;
-            const content = rawText.substring(start, end).trim();
-            renderBlock(content, (i + 1) * 10);
-        });
-    }
+            const grpBlock = this.blocks.find(b => b.type === 'groups');
+            if (grpBlock) Editors.renderGroupEditor(grpBlock.content, allUsers);
 
-    function renderBlock(content, order) {
-        const type = determineType(content);
-        const title = content.match(/^\[(.*?)\]/)?.[1] || "unknown";
-        const div = document.createElement('div');
-        div.className = `config-block type-${type}`;
-        div.setAttribute('data-order', order);
-        div.setAttribute('data-type', type);
-        div.id = `raw-block-${type}`; // Wir gehen davon aus, dass es nur ein [accounts] gibt
-        
-        div.innerHTML = `
-            <div class="block-header"><strong>[${title}]</strong> (ID: ${order})</div>
-            <textarea class="raw-config" oninput="syncFromRawToEditor()">${content}</textarea>
-        `;
-        editorContainer.appendChild(div);
-    }
-
-    function determineType(text) {
-        if (text.startsWith('[global]')) return 'global';
-        if (text.startsWith('[accounts]')) return 'accounts';
-        if (text.startsWith('[groups]')) return 'groups';
-        if (text.startsWith('[/')) return 'share';
-        return 'other';
-    }
-
-    // --- Account Editor Logik ---
-
-    function renderAccountEditor() {
-        const accBlock = document.getElementById('raw-block-accounts');
-        if (!accBlock) return;
-
-        const content = accBlock.querySelector('textarea').value;
-        const lines = content.split('\n').slice(1); // [accounts] Header weg
-
-        let html = `
-            <div class="editor-card">
-                <h2>User Accounts</h2>
-                <table id="accTable">
-                    <thead>
-                        <tr>
-                            <th>Aktiv</th>
-                            <th>Benutzername</th>
-                            <th>Passwort</th>
-                            <th>Aktion</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-
-        lines.forEach((line, index) => {
-            if (!line.trim()) return;
-            const isActive = !line.trim().startsWith('#');
-            const cleanLine = line.replace(/^\s*#\s*/, '').trim();
-            const [user, pass] = cleanLine.split(':').map(s => s?.trim());
-
-            if (user) {
-                html += createAccRow(isActive, user, pass);
-            }
-        });
-
-        html += `</tbody></table>
-                <button class="btn btn-add" onclick="addAccount()">+ User hinzufügen</button>
-            </div>`;
-        
-        customEditors.innerHTML = html;
-    }
-
-    function createAccRow(active, user, pass) {
-        return `
-            <tr>
-                <td><input type="checkbox" ${active ? 'checked' : ''} onchange="syncFromEditorToRaw()"></td>
-                <td><input type="text" value="${user}" oninput="syncFromEditorToRaw()"></td>
-                <td>
-                    <div class="pw-container">
-                        <input type="password" value="${pass || ''}" oninput="syncFromEditorToRaw()">
-                        <button class="btn" onclick="togglePw(this)">👁️</button>
-                        <button class="btn btn-gen" onclick="generateNewPw(this)">Neu</button>
+            // Raw-Blöcke rendern
+            this.blocks.forEach(block => {
+                const div = document.createElement('div');
+                div.className = `config-block type-${block.type}`;
+                div.innerHTML = `
+                    <div style="font-size:0.8rem; margin-bottom:5px; color:#666;">
+                        <strong>[${block.title}]</strong> | Typ: ${block.type.toUpperCase()} | ID: ${block.order}
                     </div>
-                </td>
-                <td><button class="btn btn-del" onclick="this.closest('tr').remove(); syncFromEditorToRaw();">Löschen</button></td>
-            </tr>`;
-    }
+                    <textarea class="raw-config" data-order="${block.order}" oninput="UI.syncFromRaw(this)" spellcheck="false">${block.content}</textarea>
+                `;
+                container.appendChild(div);
+            });
+            this.updateBash();
+        },
 
-    function addAccount() {
-        const tbody = document.querySelector('#accTable tbody');
-        const newRow = createAccRow(true, "neuerUser", PasswordGenerator.generate());
-        tbody.insertAdjacentHTML('beforeend', newRow);
-        syncFromEditorToRaw();
-    }
-
-    function togglePw(btn) {
-        const input = btn.parentElement.querySelector('input');
-        input.type = input.type === 'password' ? 'text' : 'password';
-    }
-
-    function generateNewPw(btn) {
-        const input = btn.parentElement.querySelector('input');
-        input.value = PasswordGenerator.generate();
-        input.type = 'text';
-        syncFromEditorToRaw();
-    }
-
-    // Synchronisation vom visuellen Editor zurück in das Textfeld
-    function syncFromEditorToRaw() {
-        const rows = document.querySelectorAll('#accTable tbody tr');
-        let newContent = "[accounts]\n";
-        
-        rows.forEach(row => {
-            const active = row.cells[0].querySelector('input').checked;
-            const user = row.cells[1].querySelector('input').value;
-            const pass = row.cells[2].querySelector('input').value;
-            if (user) {
-                newContent += `  ${active ? '' : '# '}${user}: ${pass}\n`;
-            }
-        });
-
-        document.getElementById('raw-block-accounts').querySelector('textarea').value = newContent;
-        updateBashCommand();
-    }
-
-    // Wenn man im Advanced Modus tippt, aktualisiere den Editor
-    function syncFromRawToEditor() {
-        renderAccountEditor();
-        updateBashCommand();
-    }
-
-    function toggleRawBlocks() {
-        editorContainer.classList.toggle('hidden', !document.getElementById('toggleAdvanced').checked);
-    }
-
-    function updateBashCommand() {
-        const blocks = Array.from(document.querySelectorAll('.config-block'));
-        blocks.sort((a, b) => a.getAttribute('data-order') - b.getAttribute('data-order'));
-
-        let fullConfig = blocks.map(b => b.querySelector('textarea').value).join('\n\n');
-        let base64Config = btoa(unescape(encodeURIComponent(fullConfig)));
-
-        let rootPath = "", subDirs = [];
-        blocks.forEach(b => {
-            if (b.getAttribute('data-type') === 'share') {
-                const content = b.querySelector('textarea').value;
-                const resMatch = content.match(/^\s*res:\s*(.*)/m);
-                const titleMatch = content.match(/^\[(.*?)\]/m);
-                if (resMatch && titleMatch) {
-                    let path = resMatch[1].trim();
-                    if (titleMatch[1] === "/") rootPath = path;
-                    else if (rootPath && path.startsWith(rootPath)) subDirs.push(path.replace(rootPath, "").replace(/^\//, ""));
-                    else subDirs.push(path);
+        syncFromRaw(textarea) {
+            const order = parseInt(textarea.getAttribute('data-order'));
+            const block = this.blocks.find(b => b.order === order);
+            if (block) {
+                block.content = textarea.value;
+                if (block.type === 'accounts') {
+                    Editors.renderAccountEditor(block.content);
+                    const allUsers = Editors.getCurrentUsers();
+                    const grp = this.blocks.find(b => b.type === 'groups');
+                    if (grp) Editors.renderGroupEditor(grp.content, allUsers);
+                }
+                if (block.type === 'groups') {
+                    const allUsers = Editors.getCurrentUsers();
+                    Editors.renderGroupEditor(block.content, allUsers);
                 }
             }
-        });
+            this.updateBash();
+        },
 
-        const dirList = subDirs.map(d => `"${d}"`).join(" ");
-        const cmd = `cp copyparty.conf copyparty.conf.bak && R="${rootPath}"; d=(${dirList}); mkdir -p "$R"; for n in "\${d[@]}"; do mkdir -p "$R/$n"; done && echo "${base64Config}" | base64 -d > copyparty.conf && sudo systemctl restart copyparty`;
-        bashOutput.value = cmd;
-    }
+        syncFromEditor() {
+            // Sync Accounts
+            const accBlock = this.blocks.find(b => b.type === 'accounts');
+            if (accBlock) {
+                accBlock.content = Editors.getAccountContentFromTable();
+                const ta = document.querySelector(`textarea[data-order="${accBlock.order}"]`);
+                if (ta) ta.value = accBlock.content;
+            }
 
-    function copyBash() {
-        bashOutput.select();
-        document.execCommand('copy');
-    }
+            // Sync Gruppen
+            const grpBlock = this.blocks.find(b => b.type === 'groups');
+            if (grpBlock) {
+                grpBlock.content = Editors.getGroupContentFromTable();
+                const ta = document.querySelector(`textarea[data-order="${grpBlock.order}"]`);
+                if (ta) ta.value = grpBlock.content;
+            }
+            
+            // UI Update für Gruppen (falls Usernamen geändert wurden)
+            const allUsers = Editors.getCurrentUsers();
+            if (grpBlock) Editors.renderGroupEditor(grpBlock.content, allUsers);
+
+            this.updateBash();
+        },
+
+        updateBash() {
+            const configContent = BashGenerator.generateConfig();
+            const fullScript = BashGenerator.generateFullScript(configContent);
+    
+            // FIX: ID muss 'bashOutput' sein und für Textareas nutzt man .value
+            const outputElement = document.getElementById('bashOutput');
+            if (outputElement) {
+                outputElement.value = fullScript;
+            }
+        },
+
+        toggleAdvanced() {
+            const isChecked = document.getElementById('toggleAdvanced').checked;
+            document.getElementById('editor-container').classList.toggle('hidden', !isChecked);
+        },
+
+        copyBash() {
+            const out = document.getElementById('bashOutput');
+            out.select();
+            document.execCommand('copy');
+            // Visuelles Feedback
+            const originalColor = out.style.color;
+            out.style.color = "#ffffff";
+            setTimeout(() => { out.style.color = originalColor; }, 200);
+        }
+    };
+
+    UI.init();
 </script>
-
 </body>
 </html>
